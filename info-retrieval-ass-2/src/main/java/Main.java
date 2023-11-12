@@ -180,47 +180,48 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, ParseException {
-        ArrayList<customDocument> documents = ReadDocuments("/cran.all.1400");
-        ArrayList<customQuery> queries = ReadQueries("/cran.qry");
+        System.out.println("123");
+//        ArrayList<customDocument> documents = ReadDocuments("/cran.all.1400");
+//        ArrayList<customQuery> queries = ReadQueries("/cran.qry");
         //documents.forEach(document -> System.out.println(document.Id + " " + document.Author));
         //System.out.println(documents.size());
         //queries.forEach(query -> System.out.println(query.Id + " " + query.Text));
         //System.out.println(queries.size());
 
-        String analyzerName = "EnglishAnalyzer";
-        Analyzer analyzer = new EnglishAnalyzer();
-        String analyzer2Name = "SimpleAnalyzer";
-        Analyzer analyzer2 = new SimpleAnalyzer();
-
-        HashMap<String, Similarity> similarities = new HashMap<>();
-        similarities.put("ClassicSimilarity", new ClassicSimilarity());
-        similarities.put("BM25Similarity", new BM25Similarity());
-        similarities.put("LMDirichletSimilarity", new LMDirichletSimilarity());
-
-        for(HashMap.Entry<String, Similarity> similarity : similarities.entrySet()){
-            DocumentIndex(documents, similarity.getValue(), analyzer);
-
-            ArrayList<String> results = QueryIndex(queries, similarity.getValue(), analyzer);
-            BufferedWriter writer = new BufferedWriter(
-                    new FileWriter(String.format("results/%s", similarity.getKey() + "_" + analyzerName)));
-            for(String line : results) {
-                writer.write(line);
-            }
-
-            writer.close();
-        }
-
-        for(HashMap.Entry<String, Similarity> similarity : similarities.entrySet()){
-            DocumentIndex(documents, similarity.getValue(), analyzer2);
-
-            ArrayList<String> results = QueryIndex(queries, similarity.getValue(), analyzer2);
-            BufferedWriter writer = new BufferedWriter(
-                    new FileWriter(String.format("results/%s", similarity.getKey() + "_" + analyzer2Name)));
-            for(String line : results) {
-                writer.write(line);
-            }
-
-            writer.close();
-        }
+//        String analyzerName = "EnglishAnalyzer";
+//        Analyzer analyzer = new EnglishAnalyzer();
+//        String analyzer2Name = "SimpleAnalyzer";
+//        Analyzer analyzer2 = new SimpleAnalyzer();
+//
+//        HashMap<String, Similarity> similarities = new HashMap<>();
+//        similarities.put("ClassicSimilarity", new ClassicSimilarity());
+//        similarities.put("BM25Similarity", new BM25Similarity());
+//        similarities.put("LMDirichletSimilarity", new LMDirichletSimilarity());
+//
+//        for(HashMap.Entry<String, Similarity> similarity : similarities.entrySet()){
+//            DocumentIndex(documents, similarity.getValue(), analyzer);
+//
+//            ArrayList<String> results = QueryIndex(queries, similarity.getValue(), analyzer);
+//            BufferedWriter writer = new BufferedWriter(
+//                    new FileWriter(String.format("results/%s", similarity.getKey() + "_" + analyzerName)));
+//            for(String line : results) {
+//                writer.write(line);
+//            }
+//
+//            writer.close();
+//        }
+//
+//        for(HashMap.Entry<String, Similarity> similarity : similarities.entrySet()){
+//            DocumentIndex(documents, similarity.getValue(), analyzer2);
+//
+//            ArrayList<String> results = QueryIndex(queries, similarity.getValue(), analyzer2);
+//            BufferedWriter writer = new BufferedWriter(
+//                    new FileWriter(String.format("results/%s", similarity.getKey() + "_" + analyzer2Name)));
+//            for(String line : results) {
+//                writer.write(line);
+//            }
+//
+//            writer.close();
+//        }
     }
 }
