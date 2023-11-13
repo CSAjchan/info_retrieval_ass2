@@ -12,7 +12,8 @@ public class Queries {
         //System.out.println("here");
 
         try {
-            ArrayList<String> queries = extractDescriptions(path);
+            //ArrayList<String> queries = extractDescriptions(path);
+            ArrayList<String> queries = extractTitle(path);
             return queries;
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
@@ -48,6 +49,30 @@ public class Queries {
                         System.out.println("Description Text:\n" + text.toString().trim());
                         textArray.add(text.toString().trim());
                     }
+                }
+                // if (line.startsWith("</top>")) {
+                // }
+            }
+        }
+        return textArray;
+}
+
+private static ArrayList<String> extractTitle(String filePath) throws IOException {
+        ArrayList<String> textArray = new ArrayList<String>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+               // line = line.trim();
+                //System.out.println(line);
+                if (line.startsWith("<top>")) {
+                    System.out.println("new document");
+                }
+
+                if (line.startsWith("<title>")) {
+                    line = line.substring("<title>".length()).trim();
+                    textArray.add(line);
+                    System.out.println(line);
                 }
                 // if (line.startsWith("</top>")) {
                 // }
