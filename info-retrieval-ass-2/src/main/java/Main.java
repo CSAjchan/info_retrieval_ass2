@@ -181,6 +181,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException, ParseException {
         System.out.println("123");
+        ArrayList<String> queries = Queries.ProcessQueryFile("src\\main\\resources\\topicFolder\\topics");
+        System.out.println(queries.size());
 //        ArrayList<customDocument> documents = ReadDocuments("/cran.all.1400");
 //        ArrayList<customQuery> queries = ReadQueries("/cran.qry");
         //documents.forEach(document -> System.out.println(document.Id + " " + document.Author));
