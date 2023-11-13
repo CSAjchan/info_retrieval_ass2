@@ -13,7 +13,8 @@ public class Queries {
 
         try {
             //ArrayList<String> queries = extractDescriptions(path);
-            ArrayList<String> queries = extractTitle(path);
+            //ArrayList<String> queries = extractTitle(path);
+            ArrayList<String> queries = extractNarrative(path);
             return queries;
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
@@ -81,5 +82,40 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
         return textArray;
 }
 
+    private static ArrayList<String> extractNarrative(String filePath) throws IOException {
+            ArrayList<String> textArray = new ArrayList<String>();
+            try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+                StringBuilder text = new StringBuilder();
+                boolean inNarr = false;
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                // line = line.trim();
+                    //System.out.println(line);
+                    if (line.startsWith("<top>")) {
+                        text.setLength(0); //new doc
+                        System.out.println("new document");
+                    }
+
+                    if (line.startsWith("<narr>")) {
+                        inNarr = true;
+                        line = line.substring("<narr> Narrative:".length()).trim(); //get rid of first line with the tag
+                    }
+                    if (inNarr) {
+                        text.append(line);
+                        System.out.println("line added " + line);
+                        if (line.startsWith("</top>")) {
+                            inNarr = false;
+                            text.delete(text.length() - "</top>:".length(), text.length()); 
+                            System.out.println("Narrative Text:\n" + text.toString().trim());
+                            textArray.add(text.toString().trim());
+                        }
+                    }
+                    // if (line.startsWith("</top>")) {
+                    // }
+                }
+            }
+            return textArray;
+    }
 
 }
