@@ -118,4 +118,41 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
             return textArray;
     }
 
+    
+    // add index searcher to generate score documents
+    public static ArrayList<String> QueryIndex(ArrayList<customQuery> queries, Similarity similarity, Analyzer analyzer) throws IOException, ParseException {
+
+        Directory directory = FSDirectory.open(Paths.get("index2"));
+
+        DirectoryReader directoryReader = DirectoryReader.open(directory);
+
+        IndexSearcher searcher = new IndexSearcher(directoryReader);
+        searcher.setSimilarity(similarity);
+        ArrayList<String> results = new ArrayList<>();
+
+        // todo:  need to be changed based on the indexed document field
+        MultiFieldQueryParser queryParser = new MultiFieldQueryParser(new String[]{"head", "text"}, analyzer);
+        queryParser.setAllowLeadingWildcard(true);
+        
+        int queryCount = 1;
+        
+        for(customQuery query : queries){
+            Query qry = queryParser.parse(QueryParser.escape(query.Text));
+
+            TopDocs topDocs = searcher.search(qry, 1000);
+            ScoreDoc[] bestHits = topDocs.scoreDocs;
+
+            for(ScoreDoc hit: bestHits) {
+                Document doc = searcher.doc(hit.doc);
+                String result = String.format("%03d 0 %s 0 %f STANDARD%n", queryCount, doc.get("id"), hit.score);
+                results.add(result);
+                System.out.println(result);
+            }
+            queryCount++;
+        }
+        directoryReader.close();
+        directory.close();
+        return results;
+    }
+
 }
