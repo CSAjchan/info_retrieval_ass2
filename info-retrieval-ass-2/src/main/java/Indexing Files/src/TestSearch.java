@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 public class TestSearch {
     public static void main(String[] args) throws Exception {
-        String indexDir = "latimes_index";  // path to index 
+        String indexDir = "index2";  // path to index 
         DirectoryReader directoryReader = DirectoryReader.open(FSDirectory.open(Paths.get(indexDir)));
         IndexSearcher searcher = new IndexSearcher(directoryReader);
 
