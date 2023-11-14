@@ -19,7 +19,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 public class CreateFRIndex {
-    private static String INDEX_DIRECTORY = "fr_index";
+    private static String INDEX_DIRECTORY = "index2";
 
     public static void main(String[] args) throws IOException {
         if (args.length <= 0) {
@@ -30,7 +30,6 @@ public class CreateFRIndex {
         Analyzer analyzer = new StandardAnalyzer();
         Directory directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
         IndexWriter iwriter = new IndexWriter(directory, config);
 
         // args[0] is the path to the directory containing all FR files
