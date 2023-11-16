@@ -180,6 +180,10 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, ParseException {
+        CreateLATimesIndex.main("src\\main\\resources\\AssignmentTwo\\latimes");
+        CreateFBISIndex.main("src\\main\\resources\\AssignmentTwo\\fbis");
+        CreateFRIndex.main("src\\main\\resources\\AssignmentTwo\\fr94");
+        CreateFTIndex.main("src\\main\\resources\\AssignmentTwo\\ft");
         System.out.println("123");
         ArrayList<String> queries = Queries.ProcessQueryFile("src\\main\\resources\\topicFolder\\topics");
         System.out.println(queries.size());

@@ -1,9 +1,8 @@
-package assignment2;
-
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.List;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,35 +10,28 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-public class CreateFTIndex {
-    private static String INDEX_DIRECTORY = "ft_index";
+public class CreateLATimesIndex {
+    private static String INDEX_DIRECTORY = "index2";
 
-    public static void main(String[] args) throws IOException {
-        if (args.length <= 0) {
-            System.out.println("Expected Financial Times documents directory as input");
-            System.exit(1);
-        }
+    public static void main(String path) throws IOException {
 
         Analyzer analyzer = new StandardAnalyzer();
         Directory directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
         IndexWriter iwriter = new IndexWriter(directory, config);
 
-        // Assuming args[0] is the path to the directory containing all FT files
-        Files.walk(Paths.get(args[0]))
+        Files.list(Paths.get(path))  
             .filter(Files::isRegularFile)
             .forEach(filePath -> {
                 try {
-                    List<String> lines = Files.readAllLines(filePath);
-                    String content = String.join("\n", lines);
+                    String content = readFileContent(filePath);
                     processContent(content, iwriter);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -58,10 +50,14 @@ public class CreateFTIndex {
             String docContent = matcher.group(1);
             Document doc = new Document();
             addField(doc, "DOCNO", docContent, "<DOCNO>(.*?)</DOCNO>");
-            addField(doc, "HEADLINE", docContent, "<HEADLINE>(.*?)</HEADLINE>");
+            addField(doc, "DOCID", docContent, "<DOCID>(.*?)</DOCID>");
+            addField(doc, "DATE", docContent, "<DATE>(.*?)</DATE>");
+            addField(doc, "SECTION", docContent, "<SECTION>(.*?)</SECTION>");
+            addField(doc, "LENGTH", docContent, "<LENGTH>(.*?)</LENGTH>");
             addField(doc, "TEXT", docContent, "<TEXT>(.*?)</TEXT>");
-            addField(doc, "PUB", docContent, "<PUB>(.*?)</PUB>");
-            addField(doc, "PAGE", docContent, "<PAGE>(.*?)</PAGE>");
+            addField(doc, "TYPE", docContent, "<TYPE>(.*?)</TYPE>");
+            // Add more fields
+
             iwriter.addDocument(doc);
         }
     }
@@ -77,6 +73,11 @@ public class CreateFTIndex {
                 doc.add(field);
             }
         }
+    }
+
+    private static String readFileContent(Path filePath) throws IOException {
+        byte[] fileBytes = Files.readAllBytes(filePath);
+        return new String(fileBytes, StandardCharsets.UTF_8);
     }
 }
 

@@ -1,5 +1,3 @@
-package assignment2;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -22,18 +20,14 @@ import org.apache.lucene.store.FSDirectory;
 public class CreateFBISIndex {
     private static String INDEX_DIRECTORY = "index2";
 
-    public static void main(String[] args) throws IOException {
-        if (args.length <= 0) {
-            System.out.println("Expected FBIS documents directory as input");
-            System.exit(1);
-        }
+    public static void main(String path) throws IOException {
 
         Analyzer analyzer = new StandardAnalyzer();
         Directory directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter iwriter = new IndexWriter(directory, config);
 
-        Files.list(Paths.get(args[0]))  // List files in the directory
+        Files.list(Paths.get(path))  // List files in the directory
             .filter(Files::isRegularFile)
             .forEach(filePath -> {
                 try {
