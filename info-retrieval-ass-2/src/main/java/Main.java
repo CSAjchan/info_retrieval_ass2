@@ -1,4 +1,5 @@
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 // import org.apache.lucene.analysis.core.SimpleAnalyzer;
 // import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.document.Document;
@@ -10,6 +11,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -181,12 +183,41 @@ public class Main {
 
     public static void main(String[] args) throws IOException, ParseException {
         CreateLATimesIndex.main("src\\main\\resources\\AssignmentTwo\\latimes");
+        System.out.println("latimes done");
         CreateFBISIndex.main("src\\main\\resources\\AssignmentTwo\\fbis");
+        System.out.println("fbis done");
         CreateFRIndex.main("src\\main\\resources\\AssignmentTwo\\fr94");
+        System.out.println("fr94 done");
         CreateFTIndex.main("src\\main\\resources\\AssignmentTwo\\ft");
-        System.out.println("123");
-        ArrayList<String> queries = Queries.ProcessQueryFile("src\\main\\resources\\topicFolder\\topics");
+        System.out.println("ft done");
+        ArrayList<String> queries = Queries.ProcessQueryFile("src\\main\\resources\\topicFolder\\topics", "all");
         System.out.println(queries.size());
+
+        String indexDir = "index2";  // path to index 
+        Analyzer analyzer = new StandardAnalyzer();
+		Directory directory = FSDirectory.open(Paths.get(indexDir));
+		DirectoryReader ireader = DirectoryReader.open(directory);
+		IndexSearcher isearcher = new IndexSearcher(ireader);
+        QueryParser parser = new QueryParser("TEXT", analyzer);
+
+        String filePath = "src\\main\\resources\\results.txt";
+        FileWriter writer = new FileWriter(filePath);
+        int index =1;
+        for(String query : queries){
+            Query text = parser.parse(query);
+
+			ScoreDoc[] hits = isearcher.search(text, 1000).scoreDocs;
+            for (int j = 0; j < hits.length; j++)
+            {
+              Document hitDoc = isearcher.doc(hits[j].doc);
+              System.out.println(j + ") " + hitDoc.get("DOCNO") + " " + hits[j].score);
+              writer.write(index + " 0 " +  hitDoc.get("DOCNO") + " 1  " + hits[j].score  + " STANDARD\n");
+          }
+          index++;
+          
+
+        }
+        writer.close();
 //        ArrayList<customDocument> documents = ReadDocuments("/cran.all.1400");
 //        ArrayList<customQuery> queries = ReadQueries("/cran.qry");
         //documents.forEach(document -> System.out.println(document.Id + " " + document.Author));
