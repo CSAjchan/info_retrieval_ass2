@@ -182,14 +182,15 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, ParseException {
-        CreateLATimesIndex.main("src\\main\\resources\\AssignmentTwo\\latimes");
+        CreateFTIndex.main("src\\main\\resources\\AssignmentTwo\\ft");
+	System.out.println("ft done");
+	CreateLATimesIndex.main("src\\main\\resources\\AssignmentTwo\\latimes");
         System.out.println("latimes done");
         CreateFBISIndex.main("src\\main\\resources\\AssignmentTwo\\fbis");
         System.out.println("fbis done");
         CreateFRIndex.main("src\\main\\resources\\AssignmentTwo\\fr94");
         System.out.println("fr94 done");
-        CreateFTIndex.main("src\\main\\resources\\AssignmentTwo\\ft");
-        System.out.println("ft done");
+        
         ArrayList<String> queries = Queries.ProcessQueryFile("src\\main\\resources\\topicFolder\\topics", "all");
         System.out.println(queries.size());
 
