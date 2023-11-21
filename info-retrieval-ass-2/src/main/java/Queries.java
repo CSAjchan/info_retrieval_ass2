@@ -1,16 +1,26 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.SynonymQuery;
+import org.apache.lucene.search.SynonymQuery.Builder;
+import org.apache.lucene.analysis.synonym.SynonymFilter;
+import org.apache.lucene.analysis.synonym.SynonymMap;
+import org.apache.lucene.analysis.synonym.WordnetSynonymParser;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
@@ -19,8 +29,11 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.document.Document;
 
 public class Queries {
-    public static ArrayList<String> ProcessQueryFile(String path, String mode){
+    public static WordnetSynonymParser parser;
+    public static SynonymMap synonymMap;
+    public static ArrayList<String> ProcessQueryFile(String path, String mode) throws IOException, ParseException, java.text.ParseException{
         //System.out.println("here");
+        buildQueryExpansinParser();
         ArrayList<String> queries = new ArrayList<String>();
         try {
             if(mode.contentEquals("titles")) {
@@ -34,6 +47,9 @@ public class Queries {
             }
             else {
                 queries = extractAll(path);
+                for(int i=0; i< 3; i++){
+                expandQuery(queries.get(i));
+                }
             }
             return queries;
         } catch (IOException e) {
@@ -62,9 +78,7 @@ public class Queries {
                 if (line.startsWith("<desc>")) {
                     line = line.substring("<desc> Description:".length()).trim(); //get rid of first line with the tag
                 }
-                System.out.println("HERE IS ORIGIANAL " + line);
                 String lineNew = line.replaceAll("[^\\p{L}\\s]", "");
-                System.out.println("HERE IS NEWWWWW " + lineNew);
                 text.append(lineNew);
                 if (line.startsWith("</top>")) {
                     text.delete(text.length() - "</top>".length(), text.length());
@@ -176,6 +190,49 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
             }
             return textArray;
     }
+
+    public static void buildQueryExpansinParser () throws IOException, java.text.ParseException {
+        try {
+            // Creating a WordnetSynonymParser instance
+            parser = new WordnetSynonymParser(true, true, new StandardAnalyzer());
+
+            // Parsing the synonym file
+            parser.parse(new FileReader("src\\main\\resources\\wn_s.pl"));
+
+            // Building the synonym map
+            synonymMap = parser.build();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void expandQuery(String query) throws IOException{
+        String tempText = "";
+        StandardAnalyzer analyzer = new StandardAnalyzer();
+
+        // TokenStream to process the query
+        TokenStream tokenStream = analyzer.tokenStream("TEXT", new StringReader(query));
+
+        // Creating a SynonymFilter using the obtained SynonymMap
+        TokenStream synonymTokenStream = new SynonymFilter(tokenStream, synonymMap, true);
+
+        // Accessing the tokens after synonym expansion
+        synonymTokenStream.reset();
+        CharTermAttribute termAttribute = synonymTokenStream.addAttribute(CharTermAttribute.class);
+
+        while (synonymTokenStream.incrementToken()) {
+            String expandedTerm = termAttribute.toString();
+            tempText += " " + expandedTerm;
+        }
+        System.out.println(tempText);
+        tempText = "";
+        // Closing token streams
+        synonymTokenStream.close();
+        analyzer.close();
+    }
+    
 
     
     // add index searcher to generate score documents

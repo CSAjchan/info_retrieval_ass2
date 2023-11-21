@@ -181,10 +181,10 @@ public class Main {
         return results;
     }
 
-    public static void main(String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException, java.text.ParseException {
         CreateFTIndex.main("src\\main\\resources\\AssignmentTwo\\ft");
-	System.out.println("ft done");
-	CreateLATimesIndex.main("src\\main\\resources\\AssignmentTwo\\latimes");
+	    System.out.println("ft done");
+	    CreateLATimesIndex.main("src\\main\\resources\\AssignmentTwo\\latimes");
         System.out.println("latimes done");
         CreateFBISIndex.main("src\\main\\resources\\AssignmentTwo\\fbis");
         System.out.println("fbis done");
