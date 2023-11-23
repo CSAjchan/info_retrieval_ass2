@@ -203,7 +203,7 @@ public class Main {
 
         String filePath = "src\\main\\resources\\results.txt";
         FileWriter writer = new FileWriter(filePath);
-        int index =1;
+        int index =401;
         for(String query : queries){
             Query text = parser.parse(query);
 
@@ -212,7 +212,7 @@ public class Main {
             {
               Document hitDoc = isearcher.doc(hits[j].doc);
               System.out.println(j + ") " + hitDoc.get("DOCNO") + " " + hits[j].score);
-              writer.write(index + " 0 " +  hitDoc.get("DOCNO") + " 1  " + hits[j].score  + " STANDARD\n");
+              writer.write(index + " 0 " +  hitDoc.get("DOCNO") + " " + (j+1) + " " + hits[j].score  + " STANDARD\n");
           }
           index++;
           
