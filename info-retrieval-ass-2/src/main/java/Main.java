@@ -1,4 +1,5 @@
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 // import org.apache.lucene.analysis.core.SimpleAnalyzer;
 // import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -182,6 +183,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, ParseException, java.text.ParseException {
+        long start = System.currentTimeMillis();
         CreateFTIndex.main("src\\main\\resources\\AssignmentTwo\\ft");
 	    System.out.println("ft done");
 	    CreateLATimesIndex.main("src\\main\\resources\\AssignmentTwo\\latimes");
@@ -190,12 +192,15 @@ public class Main {
         System.out.println("fbis done");
         CreateFRIndex.main("src\\main\\resources\\AssignmentTwo\\fr94");
         System.out.println("fr94 done");
+        long finish = System.currentTimeMillis();
+        long timeElapsed = (finish - start)/1000;
+        System.out.println("time elapsed for all in seconds: " + timeElapsed);
         
         ArrayList<String> queries = Queries.ProcessQueryFile("src\\main\\resources\\topicFolder\\topics", "all");
         System.out.println(queries.size());
 
-        String indexDir = "index2";  // path to index 
-        Analyzer analyzer = new StandardAnalyzer();
+        String indexDir = "index2";  // path to index
+        Analyzer analyzer = new EnglishAnalyzer();
 		Directory directory = FSDirectory.open(Paths.get(indexDir));
 		DirectoryReader ireader = DirectoryReader.open(directory);
 		IndexSearcher isearcher = new IndexSearcher(ireader);
@@ -215,7 +220,7 @@ public class Main {
               writer.write(index + " 0 " +  hitDoc.get("DOCNO") + " " + (j+1) + " " + hits[j].score  + " STANDARD\n");
           }
           index++;
-          
+
 
         }
         writer.close();

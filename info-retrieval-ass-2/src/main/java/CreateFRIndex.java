@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -21,14 +22,14 @@ public class CreateFRIndex {
 
     public static void main(String path) throws IOException {
 
-        Analyzer analyzer = new StandardAnalyzer();
+        Analyzer analyzer = new EnglishAnalyzer();
         Directory directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         IndexWriter iwriter = new IndexWriter(directory, config);
 
         // args[0] is the path to the directory containing all FR files
         Files.walk(Paths.get(path))
-            .filter(Files::isRegularFile)
+            .filter(Files::isRegularFile).parallel()
             .forEach(filePath -> {
                 try {
                     List<String> lines = Files.readAllLines(filePath);

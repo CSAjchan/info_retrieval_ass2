@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
@@ -210,7 +211,8 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
 
     public static void expandQuery(String query) throws IOException{
         String tempText = "";
-        StandardAnalyzer analyzer = new StandardAnalyzer();
+
+        Analyzer analyzer = new EnglishAnalyzer();
 
         // TokenStream to process the query
         TokenStream tokenStream = analyzer.tokenStream("TEXT", new StringReader(query));
