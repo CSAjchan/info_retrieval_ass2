@@ -25,6 +25,33 @@ public class CreateFTIndex {
         Analyzer analyzer = new EnglishAnalyzer();
         Directory directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
+
+        String model = "BM25";
+
+        switch (model) {
+            case "BM25":
+                config.setSimilarity(new BM25Similarity(1.5f,0.75f));
+                break;
+            case "Classic":
+                config.setSimilarity(new ClassicSimilarity());
+                break;
+            case "LMDirichlet":
+                config.setSimilarity(new LMDirichletSimilarity());
+                break;
+            case "Boolean":
+                config.setSimilarity(new BooleanSimilarity());
+                break;
+            case "BM25_Classic":
+                config.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new ClassicSimilarity()}));
+                break;
+            case "Classic_LMDirichlet":
+                config.setSimilarity(new MultiSimilarity(new Similarity[]{new ClassicSimilarity(), new LMDirichletSimilarity()}));
+                break;
+            case "BM25_LMDirichlet":
+                config.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new LMDirichletSimilarity()}));
+                break;
+        }
+        
         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
         IndexWriter iwriter = new IndexWriter(directory, config);
 
