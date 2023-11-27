@@ -204,6 +204,41 @@ public class Main {
 		Directory directory = FSDirectory.open(Paths.get(indexDir));
 		DirectoryReader ireader = DirectoryReader.open(directory);
 		IndexSearcher isearcher = new IndexSearcher(ireader);
+
+// test model performance
+//        String model = "BM25";
+//
+//        switch (model) {
+//            case "BM25":
+//                isearcher.setSimilarity(new BM25Similarity(1.5f,0.75f));
+//                break;
+//            case "Classic":
+//                isearcher.setSimilarity(new ClassicSimilarity());
+//                break;
+//            case "LMDirichlet":
+//                isearcher.setSimilarity(new LMDirichletSimilarity());
+//                break;
+//            case "Boolean":
+//                isearcher.setSimilarity(new BooleanSimilarity());
+//                break;
+//            case "BM25_Classic":
+//                isearcher.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new ClassicSimilarity()}));
+//                break;
+//            case "Classic_LMDirichlet":
+//                isearcher.setSimilarity(new MultiSimilarity(new Similarity[]{new ClassicSimilarity(), new LMDirichletSimilarity()}));
+//                break;
+//            case "BM25_LMDirichlet":
+//                isearcher.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new LMDirichletSimilarity()}));
+//                break;
+//        }
+
+        // public static final HashMap<String, Similarity> models = new HashMap<>();
+        // models.put(BM25, new BM25Similarity(1.5f,0.75f));
+        // the best one
+        Similarity bm25Similarity = RetrieveModel.getModel("BM25Similarity");
+        isearcher.setSimilarity(bm25Similarity);    
+
+	    
         QueryParser parser = new QueryParser("TEXT", analyzer);
 
         String filePath = "src\\main\\resources\\results.txt";
