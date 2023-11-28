@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -22,13 +23,40 @@ public class CreateLATimesIndex {
 
     public static void main(String path) throws IOException {
 
-        Analyzer analyzer = new StandardAnalyzer();
+        Analyzer analyzer = new EnglishAnalyzer();
         Directory directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
+
+        String model = "BM25";
+
+        switch (model) {
+            case "BM25":
+                config.setSimilarity(new BM25Similarity(1.5f,0.75f));
+                break;
+            case "Classic":
+                config.setSimilarity(new ClassicSimilarity());
+                break;
+            case "LMDirichlet":
+                config.setSimilarity(new LMDirichletSimilarity());
+                break;
+            case "Boolean":
+                config.setSimilarity(new BooleanSimilarity());
+                break;
+            case "BM25_Classic":
+                config.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new ClassicSimilarity()}));
+                break;
+            case "Classic_LMDirichlet":
+                config.setSimilarity(new MultiSimilarity(new Similarity[]{new ClassicSimilarity(), new LMDirichletSimilarity()}));
+                break;
+            case "BM25_LMDirichlet":
+                config.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new LMDirichletSimilarity()}));
+                break;
+        }
+        
         IndexWriter iwriter = new IndexWriter(directory, config);
 
         Files.list(Paths.get(path))  
-            .filter(Files::isRegularFile)
+            .filter(Files::isRegularFile).parallel()
             .forEach(filePath -> {
                 try {
                     String content = readFileContent(filePath);

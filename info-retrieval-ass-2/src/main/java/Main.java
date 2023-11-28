@@ -1,4 +1,5 @@
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 // import org.apache.lucene.analysis.core.SimpleAnalyzer;
 // import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -182,6 +183,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, ParseException, java.text.ParseException {
+        long start = System.currentTimeMillis();
         CreateFTIndex.main("src\\main\\resources\\AssignmentTwo\\ft");
 	    System.out.println("ft done");
 	    CreateLATimesIndex.main("src\\main\\resources\\AssignmentTwo\\latimes");
@@ -190,15 +192,53 @@ public class Main {
         System.out.println("fbis done");
         CreateFRIndex.main("src\\main\\resources\\AssignmentTwo\\fr94");
         System.out.println("fr94 done");
+        long finish = System.currentTimeMillis();
+        long timeElapsed = (finish - start)/1000;
+        System.out.println("time elapsed for all in seconds: " + timeElapsed);
         
         ArrayList<String> queries = Queries.ProcessQueryFile("src\\main\\resources\\topicFolder\\topics", "all");
         System.out.println(queries.size());
 
-        String indexDir = "index2";  // path to index 
-        Analyzer analyzer = new StandardAnalyzer();
+        String indexDir = "index2";  // path to index
+        Analyzer analyzer = new EnglishAnalyzer();
 		Directory directory = FSDirectory.open(Paths.get(indexDir));
 		DirectoryReader ireader = DirectoryReader.open(directory);
 		IndexSearcher isearcher = new IndexSearcher(ireader);
+
+// test model performance
+//        String model = "BM25";
+//
+//        switch (model) {
+//            case "BM25":
+//                isearcher.setSimilarity(new BM25Similarity(1.5f,0.75f));
+//                break;
+//            case "Classic":
+//                isearcher.setSimilarity(new ClassicSimilarity());
+//                break;
+//            case "LMDirichlet":
+//                isearcher.setSimilarity(new LMDirichletSimilarity());
+//                break;
+//            case "Boolean":
+//                isearcher.setSimilarity(new BooleanSimilarity());
+//                break;
+//            case "BM25_Classic":
+//                isearcher.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new ClassicSimilarity()}));
+//                break;
+//            case "Classic_LMDirichlet":
+//                isearcher.setSimilarity(new MultiSimilarity(new Similarity[]{new ClassicSimilarity(), new LMDirichletSimilarity()}));
+//                break;
+//            case "BM25_LMDirichlet":
+//                isearcher.setSimilarity(new MultiSimilarity(new Similarity[]{new BM25Similarity(), new LMDirichletSimilarity()}));
+//                break;
+//        }
+
+        // public static final HashMap<String, Similarity> models = new HashMap<>();
+        // models.put(BM25, new BM25Similarity(1.5f,0.75f));
+        // the best one
+        Similarity bm25Similarity = RetrieveModel.getModel("BM25Similarity");
+        isearcher.setSimilarity(bm25Similarity);    
+
+	    
         QueryParser parser = new QueryParser("TEXT", analyzer);
 
         String filePath = "src\\main\\resources\\results.txt";
@@ -215,7 +255,7 @@ public class Main {
               writer.write(index + " 0 " +  hitDoc.get("DOCNO") + " " + (j+1) + " " + hits[j].score  + " STANDARD\n");
           }
           index++;
-          
+
 
         }
         writer.close();
