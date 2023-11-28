@@ -59,6 +59,7 @@ public class Queries {
     }
 
     private static ArrayList<String> extractAll(String filePath) throws IOException {
+        String temp;
         ArrayList<String> textArray = new ArrayList<String>();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             StringBuilder text = new StringBuilder();
@@ -69,11 +70,17 @@ public class Queries {
                 //System.out.println(line);
                 if (line.startsWith("<top>")) {
                     text.setLength(0); //new doc
-                    System.out.println("new document");
+                   // System.out.println("new document");
                     line = line.substring("<top>".length()).trim();
+                }
+                if (line.startsWith("<title>")) {
+                    line = line.substring("<title>".length()).trim(); //get rid of first line with the tag
                 }
                 if (line.startsWith("<narr>")) {
                     line = line.substring("<narr> Narrative:".length()).trim(); //get rid of first line with the tag
+                }
+                if (line.startsWith("<num>")) {
+                    line = "";
                 }
                 if (line.startsWith("<desc>")) {
                     line = line.substring("<desc> Description:".length()).trim(); //get rid of first line with the tag
@@ -82,8 +89,11 @@ public class Queries {
                 text.append(lineNew);
                 if (line.startsWith("</top>")) {
                     text.delete(text.length() - "</top>".length(), text.length());
-                    System.out.println("Document Text:\n" + text.toString().trim());
-                    textArray.add(text.toString().trim());
+                    //System.out.println("Document Text:\n" + text.toString().trim());
+                    temp = text.toString().trim();
+                   // temp = expandQuery(temp);
+                  //  System.out.println("AADDDEEDDD: " + temp);
+                    textArray.add(temp);
                  }
                 }
             }
@@ -101,7 +111,7 @@ public class Queries {
             String line;
             while ((line = reader.readLine()) != null) {
                // line = line.trim();
-                //System.out.println(line);
+                System.out.println("READ LINE: " + line);
                 if (line.startsWith("<top>")) {
                     text.setLength(0); //new doc
                     System.out.println("new document");
@@ -112,14 +122,13 @@ public class Queries {
                     line = line.substring("<desc> Description:".length()).trim(); //get rid of first line with the tag
                 }
                 if (inDesc) {
-                    line = line.replaceAll("[^a-zA-Z]", "");
                     text.append(line);
                     System.out.println("line added " + line);
                     if (line.startsWith("<narr>")) {
                         inDesc = false;
                         text.delete(text.length() - "<narr> Narrative:".length(), text.length()); //get rid of <narr> tag that was added
                         System.out.println("Description Text:\n" + text.toString().trim());
-                        textArray.add(text.toString().trim());
+                        textArray.add(expandQuery(text.toString().trim().replaceAll("[^\\p{L}\\s]", "")));
                     }
                 }
                 // if (line.startsWith("</top>")) {
@@ -138,14 +147,14 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
                // line = line.trim();
                 //System.out.println(line);
                 if (line.startsWith("<top>")) {
-                    System.out.println("new document");
+                  //  System.out.println("new document");
                 }
 
                 if (line.startsWith("<title>")) {
                     line = line.substring("<title>".length()).trim();
-                    line = line.replaceAll("[^a-zA-Z]", "");
+                    line = line.replaceAll("[^\\p{L}\\s]", "");
                     textArray.add(line);
-                    System.out.println(line);
+                   // System.out.println(line);
                 }
                 // if (line.startsWith("</top>")) {
                 // }
@@ -166,7 +175,7 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
                     //System.out.println(line);
                     if (line.startsWith("<top>")) {
                         text.setLength(0); //new doc
-                        System.out.println("new document");
+                        //System.out.println("new document");
                     }
 
                     if (line.startsWith("<narr>")) {
@@ -174,14 +183,14 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
                         line = line.substring("<narr> Narrative:".length()).trim(); //get rid of first line with the tag
                     }
                     if (inNarr) {
-                        line = line.replaceAll("[^a-zA-Z]", "");
+                        
                         text.append(line);
-                        System.out.println("line added " + line);
+                       // System.out.println("line added " + line);
                         if (line.startsWith("</top>")) {
                             inNarr = false;
                             text.delete(text.length() - "</top>:".length(), text.length()); 
-                            System.out.println("Narrative Text:\n" + text.toString().trim());
-                            textArray.add(text.toString().trim());
+                            //System.out.println("Narrative Text:\n" + text.toString().trim());
+                            textArray.add(text.toString().trim().replaceAll("[^\\p{L}\\s]", ""));
                         }
                     }
                     // if (line.startsWith("</top>")) {
@@ -208,8 +217,9 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
         }
     }
 
-    public static void expandQuery(String query) throws IOException{
+    public static String expandQuery(String query) throws IOException{
         String tempText = "";
+        String result;
         StandardAnalyzer analyzer = new StandardAnalyzer();
 
         // TokenStream to process the query
@@ -222,16 +232,29 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
         synonymTokenStream.reset();
         CharTermAttribute termAttribute = synonymTokenStream.addAttribute(CharTermAttribute.class);
 
+        int synonymCounter = 0; // Track the number of synonyms added
+
         while (synonymTokenStream.incrementToken()) {
             String expandedTerm = termAttribute.toString();
-            tempText += " " + expandedTerm;
+    
+            // Limit the expansion to two synonyms per token
+            if (synonymCounter < 2) {
+                tempText += " " + expandedTerm;
+                synonymCounter++;
+            } else {
+                tempText += " " + termAttribute.toString(); // Add the original token
+            }
         }
-        System.out.println(tempText);
+        System.out.println("ORIGIAL: " + query);
+        System.out.println("EXPADNDED: " + tempText);
+        result = tempText;
         tempText = "";
         // Closing token streams
         synonymTokenStream.close();
         analyzer.close();
+        return result.replaceAll("[^\\p{L}\\s]", "");
     }
+
     
 
     
