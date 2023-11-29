@@ -33,8 +33,7 @@ public class Queries {
     public static WordnetSynonymParser parser;
     public static SynonymMap synonymMap;
     public static ArrayList<String> ProcessQueryFile(String path, String mode) throws IOException, ParseException, java.text.ParseException{
-        //System.out.println("here");
-        buildQueryExpansinParser();
+        buildQueryExpansionParser();
         ArrayList<String> queries = new ArrayList<String>();
         try {
             if(mode.contentEquals("titles")) {
@@ -48,9 +47,6 @@ public class Queries {
             }
             else {
                 queries = extractAll(path);
-                for(int i=0; i< 3; i++){
-                expandQuery(queries.get(i));
-                }
             }
             return queries;
         } catch (IOException e) {
@@ -59,25 +55,30 @@ public class Queries {
         return null;
     }
 
+    //does not include narrative
     private static ArrayList<String> extractAll(String filePath) throws IOException {
         String temp;
         ArrayList<String> textArray = new ArrayList<String>();
+        
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             StringBuilder text = new StringBuilder();
-
+            boolean inNarr = false;
+            boolean endOfDoc = false;
             String line;
             while ((line = reader.readLine()) != null) {
-               // line = line.trim();
-                //System.out.println(line);
                 if (line.startsWith("<top>")) {
+                    inNarr = false;
+                    endOfDoc = false;
                     text.setLength(0); //new doc
-                   // System.out.println("new document");
+                    //System.out.println("new document");
                     line = line.substring("<top>".length()).trim();
                 }
                 if (line.startsWith("<title>")) {
                     line = line.substring("<title>".length()).trim(); //get rid of first line with the tag
+                    //line = expandQuery(line);     //To expand the title
                 }
                 if (line.startsWith("<narr>")) {
+                    inNarr = true;
                     line = line.substring("<narr> Narrative:".length()).trim(); //get rid of first line with the tag
                 }
                 if (line.startsWith("<num>")) {
@@ -86,17 +87,20 @@ public class Queries {
                 if (line.startsWith("<desc>")) {
                     line = line.substring("<desc> Description:".length()).trim(); //get rid of first line with the tag
                 }
-                String lineNew = line.replaceAll("[^\\p{L}\\s]", "");
-                text.append(lineNew);
+                if(inNarr == false){
+                    text.append(line + " ");
+                }
+                if(inNarr == true){
                 if (line.startsWith("</top>")) {
-                    text.delete(text.length() - "</top>".length(), text.length());
-                    //System.out.println("Document Text:\n" + text.toString().trim());
-                    temp = text.toString().trim();
-                   // temp = expandQuery(temp);
-                  //  System.out.println("AADDDEEDDD: " + temp);
+                    temp = text.toString();
+                    temp.replace("</top>", "");
+                    temp = temp.replaceAll("[^\\p{L}\\s]", "");
+                    System.out.println("Document Text:\n" + temp);
+                   // temp = expandQuery(temp);      // To expand all the query text
                     textArray.add(temp);
                  }
                 }
+            }
             }
         
         return textArray;
@@ -201,7 +205,7 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
             return textArray;
     }
 
-    public static void buildQueryExpansinParser () throws IOException, java.text.ParseException {
+    public static void buildQueryExpansionParser () throws IOException, java.text.ParseException {
         try {
             // Creating a WordnetSynonymParser instance
             parser = new WordnetSynonymParser(true, true, new StandardAnalyzer());
@@ -220,7 +224,7 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
 
     public static String expandQuery(String query) throws IOException{
         String tempText = "";
-
+        String result = "";
         Analyzer analyzer = new EnglishAnalyzer();
 
         // TokenStream to process the query
@@ -233,24 +237,13 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
         synonymTokenStream.reset();
         CharTermAttribute termAttribute = synonymTokenStream.addAttribute(CharTermAttribute.class);
 
-        int synonymCounter = 0; // Track the number of synonyms added
-
         while (synonymTokenStream.incrementToken()) {
-            String expandedTerm = termAttribute.toString();
-    
-            // Limit the expansion to two synonyms per token
-            if (synonymCounter < 2) {
-                tempText += " " + expandedTerm;
-                synonymCounter++;
-            } else {
-                tempText += " " + termAttribute.toString(); // Add the original token
-            }
+            tempText += " " + termAttribute.toString(); // Add the original token
         }
-        System.out.println("ORIGIAL: " + query);
-        System.out.println("EXPADNDED: " + tempText);
+        System.out.println("Original text: " + query);
+        System.out.println("Expanded text: " + tempText);
         result = tempText;
         tempText = "";
-        // Closing token streams
         synonymTokenStream.close();
         analyzer.close();
         return result.replaceAll("[^\\p{L}\\s]", "");
@@ -258,7 +251,7 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
 
     
 
-    
+    //not used
     // add index searcher to generate score documents
     public static ArrayList<String> QueryIndex(ArrayList<customQuery> queries, Similarity similarity, Analyzer analyzer) throws IOException, ParseException {
 

@@ -235,8 +235,8 @@ public class Main {
         // public static final HashMap<String, Similarity> models = new HashMap<>();
         // models.put(BM25, new BM25Similarity(1.5f,0.75f));
         // the best one
-        Similarity bm25Similarity = RetrieveModel.getModel("BM25Similarity");
-        isearcher.setSimilarity(bm25Similarity);    
+        Similarity bm25LMSimilarity = RetrieveModel.getModel("BM25_LMDirichletSimilarity");
+        isearcher.setSimilarity(bm25LMSimilarity);    
 
 	    
         QueryParser parser = new QueryParser("TEXT", analyzer);

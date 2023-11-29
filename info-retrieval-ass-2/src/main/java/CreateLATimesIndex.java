@@ -15,6 +15,12 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.BooleanSimilarity;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
+import org.apache.lucene.search.similarities.LMDirichletSimilarity;
+import org.apache.lucene.search.similarities.MultiSimilarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -27,7 +33,7 @@ public class CreateLATimesIndex {
         Directory directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
-        String model = "BM25";
+        String model = "BM25_LMDirichlet";
 
         switch (model) {
             case "BM25":
@@ -73,7 +79,6 @@ public class CreateLATimesIndex {
     private static void processContent(String content, IndexWriter iwriter) throws IOException {
         Pattern pattern = Pattern.compile("<DOC>(.*?)</DOC>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(content);
-
         while (matcher.find()) {
             String docContent = matcher.group(1);
             Document doc = new Document();
@@ -85,7 +90,6 @@ public class CreateLATimesIndex {
             addField(doc, "TEXT", docContent, "<TEXT>(.*?)</TEXT>");
             addField(doc, "TYPE", docContent, "<TYPE>(.*?)</TYPE>");
             // Add more fields
-
             iwriter.addDocument(doc);
         }
     }
