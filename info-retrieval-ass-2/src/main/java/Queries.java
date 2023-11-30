@@ -33,7 +33,7 @@ public class Queries {
     public static WordnetSynonymParser parser;
     public static SynonymMap synonymMap;
     public static ArrayList<String> ProcessQueryFile(String path, String mode) throws IOException, ParseException, java.text.ParseException{
-        buildQueryExpansionParser();
+        buildQueryExpansionMap();
         ArrayList<String> queries = new ArrayList<String>();
         try {
             if(mode.contentEquals("titles")) {
@@ -136,8 +136,6 @@ public class Queries {
                         textArray.add(expandQuery(text.toString().trim().replaceAll("[^\\p{L}\\s]", "")));
                     }
                 }
-                // if (line.startsWith("</top>")) {
-                // }
             }
         }
         return textArray;
@@ -161,8 +159,6 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
                     textArray.add(line);
                    // System.out.println(line);
                 }
-                // if (line.startsWith("</top>")) {
-                // }
             }
         }
         return textArray;
@@ -198,47 +194,35 @@ private static ArrayList<String> extractTitle(String filePath) throws IOExceptio
                             textArray.add(text.toString().trim().replaceAll("[^\\p{L}\\s]", ""));
                         }
                     }
-                    // if (line.startsWith("</top>")) {
-                    // }
                 }
             }
             return textArray;
     }
 
-    public static void buildQueryExpansionParser () throws IOException, java.text.ParseException {
+    //builds synonym map from synonym file from WordNet
+    public static void buildQueryExpansionMap () throws IOException, java.text.ParseException {
         try {
-            // Creating a WordnetSynonymParser instance
             parser = new WordnetSynonymParser(true, true, new StandardAnalyzer());
-
-            // Parsing the synonym file
             parser.parse(new FileReader("src\\main\\resources\\wn_s.pl"));
-
-            // Building the synonym map
             synonymMap = parser.build();
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    // expands the query using the synonym map built earlier
     public static String expandQuery(String query) throws IOException{
         String tempText = "";
         String result = "";
         Analyzer analyzer = new EnglishAnalyzer();
 
-        // TokenStream to process the query
         TokenStream tokenStream = analyzer.tokenStream("TEXT", new StringReader(query));
-
-        // Creating a SynonymFilter using the obtained SynonymMap
-        TokenStream synonymTokenStream = new SynonymFilter(tokenStream, synonymMap, true);
-
-        // Accessing the tokens after synonym expansion
+        TokenStream synonymTokenStream = new SynonymFilter(tokenStream, synonymMap, true); //expanded query
         synonymTokenStream.reset();
         CharTermAttribute termAttribute = synonymTokenStream.addAttribute(CharTermAttribute.class);
 
         while (synonymTokenStream.incrementToken()) {
-            tempText += " " + termAttribute.toString(); // Add the original token
+            tempText += " " + termAttribute.toString();
         }
         System.out.println("Original text: " + query);
         System.out.println("Expanded text: " + tempText);
